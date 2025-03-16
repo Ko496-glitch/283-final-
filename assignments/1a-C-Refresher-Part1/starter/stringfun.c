@@ -9,6 +9,11 @@
 
 // TODO: #1 What is the purpose of providing prototypes for
 //          the functions in this code module
+
+/*
+Function prototypes allow the compiler to recognize functions before they are used in main().
+This ensures proper type checking and prevents implicit declaration warnings.
+*/
 void usage(char *);
 int count_words(char *);
 void reverse_string(char *);
@@ -40,13 +45,28 @@ void usage(char *exename)
 //       so just 'return wc;'
 int count_words(char *str)
 {
-    // Suggested local variables
     int len;
     int wc;
     bool word_start;
 
-    // Please implement
-    return 0;
+    len = strlen(str);
+    wc = 0;
+    word_start = false;
+
+    for (int i = 0; i < len; i++) {
+        if (!word_start) {
+            if (str[i] == ' ')
+                continue;
+            else {
+                wc++;
+                word_start = true;
+            }
+        } else {
+            if (str[i] == ' ')
+                word_start = false;
+        }
+    }
+    return wc;
 }
 
 // reverse_string() algorithm
@@ -64,17 +84,24 @@ int count_words(char *str)
 //       2c. decrement end_indx by 1
 //
 //   3. When the loop above terminates, the string should be reversed in place
+
 void reverse_string(char *str)
 {
-    // Suggested local variables
-    int end_idx; // should be length of string - 1
+    int end_idx; 
     int start_idx;
     char tmp_char;
-
-    // Please implement
-
+    start_idx = 0;
+    end_idx = strlen(str) - 1;
+    while (end_idx > start_idx) {
+        tmp_char = str[start_idx];
+        str[start_idx] = str[end_idx];
+        str[end_idx] = tmp_char;
+        start_idx++;
+        end_idx--;
+    }
     return;
 }
+
 
 // word_print() - algorithm
 //
@@ -113,16 +140,37 @@ void reverse_string(char *str)
 //  4. fun (3)
 void word_print(char *str)
 {
-    // suggested local variables
-    int len;                 // length of string - aka strlen(str);
-    int last_char_idx;       // index of last char - strlen(str)-1;
-    int wc = 0;              // counts words
-    int wlen = 0;            // length of current word
-    bool word_start = false; // am I at the start of a new word
+    int len = strlen(str);
+    int last_char_idx = len - 1;
+    int wc = 0;
+    int wlen = 0;
+    bool word_start = false;
 
-    // Please implement
+    printf("Word Print\n----------\n");
+
+    for (int i = 0; i < len; i++) {
+        if (!word_start) {
+            if (str[i] != ' ') {
+                wc++;
+                word_start = true;
+                wlen = 0;
+                printf("%d. ", wc);
+                printf("%c", str[i]);
+                wlen++;
+            }
+        } else {
+            if (str[i] != ' ') {
+                printf("%c", str[i]);
+                wlen++;
+            }
+        }
+        if (word_start && ((str[i] == ' ') || (i == last_char_idx))) {
+            printf(" (%d)\n", wlen);
+            word_start = false;
+            wlen = 0;
+        }
+    }
 }
-
 int main(int argc, char *argv[])
 {
     char *input_string; // holds the string provided by the user on cmd line
@@ -168,13 +216,14 @@ int main(int argc, char *argv[])
     switch (opt)
     {
     case 'c':
-        int wc = 0; // variable for the word count
-
+        int wc = count_words(input_string); // variable for the word count
         // TODO: #2. Call count_words, return of the result
         //           should go into the wc variable
         printf("Word Count: %d\n", wc);
         break;
     case 'r':
+        {
+        reverse_string(input_string);
         // TODO: #3. Call reverse string using input_string
         //           input string should be reversed
         printf("Reversed string: %s\n", input_string);
@@ -184,23 +233,42 @@ int main(int argc, char *argv[])
         //             characters because the string is reversed
         //             in place.  Briefly explain why the string
         //             is reversed in place - place in a comment
+        /*
+        The string is reversed in place because we swap characters directly in the memory where the string is stored, 
+        rather than creating a new string. Since C strings are mutable, we modify them without requiring additional storage.
+        */
         break;
-    case 'w':
+        }
+    case 'w':{
+        word_print(input_string);
         printf("Word Print\n----------\n");
 
         // TODO: #5. Call word_print, output should be
         //           printed by that function
         break;
-
+    }
     // TODO: #6. What is the purpose of the default option here?
     //           Please describe replacing this TODO comment with
     //           your thoughts.
+    /*
+    The default case handles invalid input options. If the user provides an unknown flag (e.g., -x), this ensures that the program prints a usage message and exits safely instead of proceeding with undefined behavior.
+    */
+
     default:
+    {
         usage(argv[0]);
         printf("Invalid option %c provided, exiting!\n", opt);
         exit(1);
     }
+    }
+    return 0;
+}
+
     // TODO: #7. Why did we place a break statement on each case
     //           option, and did not place one on default.  What
     //           would happen if we forgot the break statement?
-}
+
+    /*
+    Each case in a switch must have a break statement; otherwise, execution will "fall through" to the next case, causing unintended behavior. 
+    The default case does not require a break since it is the last case and exits the program.
+    */
